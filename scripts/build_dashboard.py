@@ -88,13 +88,16 @@ def briefs_section(briefs):
                  f"실제(DDS 각도): {b.get('fact','')}\n"
                  f"왜 지금 이 주제·각도인지(근거): {b.get('why','')}\n"
                  f"CTA: {b.get('cta','')}")
+        lesson = b.get("lesson", "")
+        lesson_html = (f"<div class='lesson'><b>📖 흐름 독법(네 안목용):</b> {esc(lesson)}</div>"
+                       if lesson else "")
         src = f"<div class='bsrc'>근거 카드: {esc(b['source_card'])}</div>" if b.get("source_card") else ""
         open_attr = " open" if b is briefs[-1] else ""
         out.append(
             f"<details class='brief'{open_attr}>"
             f"<summary><b>#{b.get('id','')} {esc(b.get('topic',''))}</b>"
             f"<span class='bmeta'>{esc(b.get('category',''))} · {esc(b.get('created_at',''))}</span></summary>"
-            f"{src}<pre class='bblock'>{esc(block)}</pre></details>")
+            f"{src}<pre class='bblock'>{esc(block)}</pre>{lesson_html}</details>")
     return "\n".join(out)
 
 
@@ -215,6 +218,9 @@ details.brief summary{{cursor:pointer;font-size:13.5px;display:flex;
 .bblock{{background:var(--card);border:1px solid var(--line);border-radius:8px;
  padding:11px 13px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;
  word-break:break-word;font-family:'Malgun Gothic',sans-serif;margin:6px 0 0}}
+.lesson{{background:var(--chip);border-left:3px solid var(--c3);border-radius:0 8px 8px 0;
+ padding:9px 12px;font-size:12px;line-height:1.6;margin:8px 0 0}}
+.lesson b{{color:var(--c3)}}
 details.blk summary{{cursor:pointer;color:var(--mut);font-size:13px}}
 .foot{{color:var(--mut);font-size:11px;text-align:center;margin:18px 0}}
 </style></head><body><div class="wrap">
