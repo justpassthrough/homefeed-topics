@@ -86,7 +86,7 @@ def briefs_section(briefs):
         block = (f"주제: {b.get('topic','')}\n"
                  f"뒤집을 상식: {b.get('flip','')}\n"
                  f"실제(DDS 각도): {b.get('fact','')}\n"
-                 f"왜 이 주제: {b.get('why','')}\n"
+                 f"왜 지금 이 주제·각도인지(근거): {b.get('why','')}\n"
                  f"CTA: {b.get('cta','')}")
         src = f"<div class='bsrc'>근거 카드: {esc(b['source_card'])}</div>" if b.get("source_card") else ""
         open_attr = " open" if b is briefs[-1] else ""
