@@ -76,6 +76,28 @@ def category_blocks(categories):
     return "\n".join(out)
 
 
+def briefs_section(briefs):
+    """온디맨드로 만든 브리프 기록 — 복사 가능한 [A] 블록, 최신순."""
+    if not briefs:
+        return ("<p class='muted'>아직 만든 브리프가 없어요. 클로드 코드에서 "
+                "\"○○ 브리프 줘\"라고 하면 여기 쌓입니다.</p>")
+    out = []
+    for b in reversed(briefs):
+        block = (f"주제: {b.get('topic','')}\n"
+                 f"뒤집을 상식: {b.get('flip','')}\n"
+                 f"실제(DDS 각도): {b.get('fact','')}\n"
+                 f"왜 이 주제: {b.get('why','')}\n"
+                 f"CTA: {b.get('cta','')}")
+        src = f"<div class='bsrc'>근거 카드: {esc(b['source_card'])}</div>" if b.get("source_card") else ""
+        open_attr = " open" if b is briefs[-1] else ""
+        out.append(
+            f"<details class='brief'{open_attr}>"
+            f"<summary><b>#{b.get('id','')} {esc(b.get('topic',''))}</b>"
+            f"<span class='bmeta'>{esc(b.get('category',''))} · {esc(b.get('created_at',''))}</span></summary>"
+            f"{src}<pre class='bblock'>{esc(block)}</pre></details>")
+    return "\n".join(out)
+
+
 def topic_trend_table(scans):
     recent = scans[-8:]
     tot = Counter()
@@ -103,6 +125,10 @@ def build():
     if not scans:
         print("스캔 기록 없음"); return
     latest = scans[-1]
+    try:
+        briefs = json.load(open(os.path.join(DATA, "briefs.json"), encoding="utf-8")).get("briefs", [])
+    except Exception:
+        briefs = []
 
     categories = latest.get("categories", [])
     hooks = sorted(latest.get("hook_counts", {}).items(), key=lambda x: -x[1])
@@ -113,6 +139,7 @@ def build():
 
     hmax = max((v for _, v in hooks), default=1)
     cat_html = category_blocks(categories)
+    briefs_html = briefs_section(briefs)
     hook_html = bar_rows([(HOOK_SHORT.get(k, k), v) for k, v in hooks], hmax, "var(--c2)")
     celeb_html = " ".join(
         f'<span class="chip">{esc(n)}<i>{c}</i></span>' for n, c in celebs) or "<span class='muted'>없음</span>"
@@ -179,6 +206,15 @@ table.trend{{width:100%;border-collapse:collapse;font-size:12px}}
 table.trend th,table.trend td{{border:1px solid var(--line);padding:4px 6px;text-align:center}}
 table.trend th.tname{{text-align:left;white-space:nowrap}}
 .muted{{color:var(--mut);font-size:12.5px}}
+details.brief{{border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:8px 0;background:var(--bg)}}
+details.brief[open]{{border-color:var(--c1)}}
+details.brief summary{{cursor:pointer;font-size:13.5px;display:flex;
+ justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}}
+.bmeta{{color:var(--mut);font-size:11px;font-weight:400}}
+.bsrc{{color:var(--mut);font-size:11.5px;margin:8px 0 4px}}
+.bblock{{background:var(--card);border:1px solid var(--line);border-radius:8px;
+ padding:11px 13px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;
+ word-break:break-word;font-family:'Malgun Gothic',sans-serif;margin:6px 0 0}}
 details.blk summary{{cursor:pointer;color:var(--mut);font-size:13px}}
 .foot{{color:var(--mut);font-size:11px;text-align:center;margin:18px 0}}
 </style></head><body><div class="wrap">
@@ -190,6 +226,10 @@ details.blk summary{{cursor:pointer;color:var(--mut);font-size:13px}}
 <p class="hint">피드 카드를 세부 주제로 묶고, <b>내 블로그에 먹히는지 자동 판정</b>(✅추천/⚠️조건부/❌패스).
  크기가 아니라 '약사·DDS가 차별화되는가'로 정렬 · 숫자는 카드 수</p>
 <div class="catgrid">{cat_html}</div></div>
+
+<div class="card"><h2>📋 만든 글감 브리프 ({len(briefs)})</h2>
+<p class="hint">클로드 코드에서 요청해 만든 브리프 기록 · 최신순 · 블록 복사해서 글쓰기 프로젝트에 붙여넣기</p>
+{briefs_html}</div>
 
 <div class="card"><h2>💊 약사가 파고들 빈자리</h2>
 <p class="hint">아래 주제들은 지금 <b>의사·전문가 목소리</b>로 설명되는 중 —
