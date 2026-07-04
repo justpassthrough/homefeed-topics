@@ -3,131 +3,90 @@
 <title>홈피드 건강판 트렌드</title>
 <style>
 :root{--bg:#fafafa;--card:#fff;--tx:#1a1a1a;--mut:#777;--line:#eaeaea;
- --c1:#3b82f6;--c2:#8b5cf6;--c3:#f59e0b;--accent:#ef4444;}
+ --c1:#3b82f6;--c2:#8b5cf6;--c3:#f59e0b;--accent:#ef4444;--chip:#f1f3f6;}
 @media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#181b21;--tx:#e8e8e8;
- --mut:#8b93a1;--line:#262b34;}}
+ --mut:#8b93a1;--line:#262b34;--chip:#242a33;}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);
  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;
  line-height:1.5;padding:16px}
-.wrap{max-width:860px;margin:0 auto}
+.wrap{max-width:880px;margin:0 auto}
 h1{font-size:20px;margin:8px 0 2px}
 .sub{color:var(--mut);font-size:13px;margin-bottom:18px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
  padding:16px 18px;margin-bottom:14px}
-.card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:6px}
+.card>h2{font-size:15px;margin:0 0 4px}
+.card .hint{color:var(--mut);font-size:12px;margin:0 0 12px}
+.catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cat{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--bg)}
+.cathead{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.catname{font-weight:700;font-size:13.5px}
+.catcnt{background:var(--c1);color:#fff;border-radius:20px;font-size:11px;
+ padding:1px 9px;font-weight:700}
+.cat ul{margin:0;padding-left:16px;font-size:12.5px}
+.cat li{margin:3px 0}
+.cat details{margin-top:5px} .cat summary{cursor:pointer;color:var(--mut);font-size:12px}
 .row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}
-.lbl{width:150px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbl{width:110px;flex:none;white-space:nowrap}
 .bar{flex:1;background:var(--line);border-radius:6px;height:12px;overflow:hidden}
 .fill{display:block;height:100%;border-radius:6px}
 .num{width:26px;text-align:right;color:var(--mut);flex:none}
-.chip{display:inline-block;background:var(--line);border-radius:20px;
+.chip{display:inline-block;background:var(--chip);border-radius:20px;
  padding:4px 11px;margin:3px;font-size:13px}
 .chip i{color:var(--mut);font-style:normal;margin-left:5px;font-size:11px}
-.gap{font-size:14px}
-.gap b{color:var(--accent)}
-ul.cards{margin:0;padding-left:18px;font-size:13px;columns:1}
-ul.cards li{margin:3px 0}
+.gapbox{background:var(--bg);border:1px dashed var(--accent);border-radius:11px;
+ padding:11px 13px;margin:10px 0;font-size:13px}
+.gapbox b{color:var(--accent)}
+.angle{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.angle span{background:var(--chip);border-radius:6px;padding:3px 9px;font-size:12px}
+ul.docs{margin:8px 0 0;padding-left:18px;font-size:12.5px}
+ul.docs li{margin:3px 0}
 table.trend{width:100%;border-collapse:collapse;font-size:12px}
 table.trend th,table.trend td{border:1px solid var(--line);padding:4px 6px;text-align:center}
 table.trend th.tname{text-align:left;white-space:nowrap}
-.muted{color:var(--mut);font-size:13px}
-details{font-size:13px} summary{cursor:pointer;color:var(--mut)}
+.muted{color:var(--mut);font-size:12.5px}
+details.blk summary{cursor:pointer;color:var(--mut);font-size:13px}
 .foot{color:var(--mut);font-size:11px;text-align:center;margin:18px 0}
 </style></head><body><div class="wrap">
 <h1>🩺 홈피드 건강판 트렌드</h1>
-<div class="sub">네이버 모바일 홈피드 '건강판'을 3일마다 스캔 · 최근 스캔 <b>2026-07-04 12:45</b>
- · 카드 161개(건강 57)</div>
+<div class="sub">네이버 모바일 홈피드 '건강판' 3일마다 스캔 · 최근 <b>2026-07-04 15:34</b>
+ · 카드 164(건강 45)</div>
 
-<div class="card"><h2>🔥 지금 뜨는 주제</h2><div class="row"><span class="lbl">다이어트</span><span class="bar"><span class="fill" style="width:100%;background:var(--c1)"></span></span><span class="num">7</span></div>
-<div class="row"><span class="lbl">감량</span><span class="bar"><span class="fill" style="width:71%;background:var(--c1)"></span></span><span class="num">5</span></div>
-<div class="row"><span class="lbl">스트레칭</span><span class="bar"><span class="fill" style="width:57%;background:var(--c1)"></span></span><span class="num">4</span></div>
-<div class="row"><span class="lbl">식단</span><span class="bar"><span class="fill" style="width:57%;background:var(--c1)"></span></span><span class="num">4</span></div>
-<div class="row"><span class="lbl">피부</span><span class="bar"><span class="fill" style="width:43%;background:var(--c1)"></span></span><span class="num">3</span></div>
-<div class="row"><span class="lbl">위고비</span><span class="bar"><span class="fill" style="width:43%;background:var(--c1)"></span></span><span class="num">3</span></div>
-<div class="row"><span class="lbl">커피</span><span class="bar"><span class="fill" style="width:29%;background:var(--c1)"></span></span><span class="num">2</span></div>
-<div class="row"><span class="lbl">허벅지</span><span class="bar"><span class="fill" style="width:29%;background:var(--c1)"></span></span><span class="num">2</span></div>
-<div class="row"><span class="lbl">통증</span><span class="bar"><span class="fill" style="width:29%;background:var(--c1)"></span></span><span class="num">2</span></div>
-<div class="row"><span class="lbl">팔뚝살</span><span class="bar"><span class="fill" style="width:29%;background:var(--c1)"></span></span><span class="num">2</span></div>
-<div class="row"><span class="lbl">마운자로</span><span class="bar"><span class="fill" style="width:29%;background:var(--c1)"></span></span><span class="num">2</span></div>
-<div class="row"><span class="lbl">고관절</span><span class="bar"><span class="fill" style="width:29%;background:var(--c1)"></span></span><span class="num">2</span></div></div>
+<div class="card"><h2>🔥 지금 뜨는 주제</h2>
+<p class="hint">피드 카드를 세부 주제로 묶어 정리 · 숫자는 카드 수</p>
+<div class="catgrid"><div class="cat"><div class="cathead"><span class="catname">운동·통증·스트레칭</span><span class="catcnt">10</span></div><ul><li>스쿼트보다 재밌는 허벅지 운동 4가지</li><li>이렇게 주무시나요? 최악의 수면 자세 입니다</li><li>팔을 뒤로 넘기면 독소 싹 빠집니다 #림프순환 #붓기관리 #어깨통증 #팔뚝살 #다이어트</li><li>비틀어진 골반 교정 스트레칭 #허리통증 #허리 스트레칭 #골반통증</li><li>&quot;많이 안 먹는데 왜?&quot; 50대 이후 뱃살 확 찌게 만드는 최악의 습관 1위</li><li>옆구리 러브핸들 살 빼는 운동 초간단 방법 BEST 3</li></ul><details><summary>+4개 더</summary><ul><li>고관절 뻣뻣하다면? 유연성 높이는 스트레칭 운동 종류</li><li>윗몸일으키키 대신 의자로 처진 뱃살 삭제</li><li>운동메이트 장쌤</li><li>무릎 아플때 집에서 할 수 있는 재활 운동 루틴 4가지</li></ul></details></div>
+<div class="cat"><div class="cathead"><span class="catname">셀럽 감량·식단</span><span class="catcnt">4</span></div><ul><li>&quot;10년 넘게 요가&quot;.. 5kg 감량한 워킹맘 박경림의 관리방법은?</li><li>&quot;배달시켜 먹어요&quot; 복근 보유한 이채연, 다이어트 식단·몸매관리 비법 공개 [헬시타임]</li><li>&quot;뉴욕에서도 달렸다&quot; 50대 이영애 짜파게티 대신 혈당관리 식단은?</li><li>김민하 다이어트 | 9kg 감량보다 놀라운 &#x27;무운동&#x27; 식단과 사복 센스</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">콜레스테롤·혈압·혈관</span><span class="catcnt">4</span></div><ul><li>심장 건강, 혈관만 볼 게 아냐...가슴·등 근육 ‘질’ 좋을수록 심장마비 위험 낮아</li><li>&quot;매일 먹었더니 혈관이 달라졌어요&quot; 고지혈증좋은음식 TOP5</li><li>&quot;피가 끈적거리는 분들 주목!&quot; 콜레스테롤 싹 녹여버리는 고지혈증에 좋은 마법의 음식 4가지</li><li>막힌 혈관 뚫린다! 한의사 15kg 뺀 비트주스 다이어트 해독주스 레시피</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">혈당·당뇨</span><span class="catcnt">3</span></div><ul><li>&quot;설탕은 차라리 양반입니다&quot; 당뇨에 더 위험한 음식 5가지</li><li>&quot;공복혈당 120 넘겼나요?&quot; 당뇨 초기증상 5가지와 의외로 혈당 치솟게 하는 음식 TOP4</li><li>췌장암이 입에 먼저 신호를 보낸다? 지금 당장 확인할 증상</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">뒤집기 음식·식습관</span><span class="catcnt">2</span></div><ul><li>상추 자주 먹었더니 복부 지방이 “쏙”...뱃살 빼는 데 정말 좋은 채소들</li><li>한국인 90%가 잘못 먹는 채소 TOP3</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">피부·노화</span><span class="catcnt">2</span></div><ul><li>피부 탄력 떨어진“16kg 감량 후 44kg” 한혜연, 다이어트 후 턱선 고민까지</li><li>46세 김나영이 돈 안 아깝다 추천한, 피부과 리프팅 레이저</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">면역·피로</span><span class="catcnt">2</span></div><ul><li>면역력 뚝뚝 떨어진다는 신호?</li><li>다이어트해도 살이 안 빠져요… 저는 영양 부족 때문이었습니다</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">영양제·성분</span><span class="catcnt">1</span></div><ul><li>가성비 비타민D? 이런걸로 고르시면 됩니다! #비타민 #비타민D #비타민디 #약들약 #고약사</li></ul></div>
+<div class="cat"><div class="cathead"><span class="catname">비만약(위고비·마운자로)</span><span class="catcnt">1</span></div><ul><li>비만치료제 없이 살 빼는 몸 만들기! 천연위고비식단 7가지</li></ul></div></div></div>
 
-<div class="card"><h2>🪝 훅 패턴 분포</h2><div class="row"><span class="lbl">질문·미완성(?·이유·비결)</span><span class="bar"><span class="fill" style="width:100%;background:var(--c2)"></span></span><span class="num">30</span></div>
-<div class="row"><span class="lbl">숫자리스트(TOP·N가지)</span><span class="bar"><span class="fill" style="width:93%;background:var(--c2)"></span></span><span class="num">28</span></div>
-<div class="row"><span class="lbl">권위(약사·의사·전문가)</span><span class="bar"><span class="fill" style="width:43%;background:var(--c2)"></span></span><span class="num">13</span></div>
-<div class="row"><span class="lbl">금기·처방(절대·이렇게 드세요)</span><span class="bar"><span class="fill" style="width:23%;background:var(--c2)"></span></span><span class="num">7</span></div>
-<div class="row"><span class="lbl">손실회피·공포(피해야·독·위험)</span><span class="bar"><span class="fill" style="width:20%;background:var(--c2)"></span></span><span class="num">6</span></div>
-<div class="row"><span class="lbl">즉효·시간(하루·N분·싹·쫙)</span><span class="bar"><span class="fill" style="width:20%;background:var(--c2)"></span></span><span class="num">6</span></div>
-<div class="row"><span class="lbl">뒤집기(90%·잘못·사실은)</span><span class="bar"><span class="fill" style="width:17%;background:var(--c2)"></span></span><span class="num">5</span></div></div>
+<div class="card"><h2>💊 약사가 파고들 빈자리</h2>
+<p class="hint">아래 주제들은 지금 <b>의사·전문가 목소리</b>로 설명되는 중 —
+ 약사 관점은 비어 있어요(이번 스캔: 약사 2 vs 의사·전문가 5).</p>
+<div class="gapbox">같은 주제라도 <b>약사가 잡으면 차별화</b>되는 각도:
+<div class="angle"><span>복용 타이밍·순서</span><span>약물 상호작용</span>
+<span>영양제↔처방약 병용</span><span>성분 실효성·용량</span><span>부작용 대처</span></div></div>
+<p class="hint" style="margin-top:10px">지금 의사·전문가가 다루고 있는 실제 카드:</p>
+<ul class="docs"><li>“암 세포 키우는 최악의 식습관”전문가들 경고한 음식 같이 알아가는#암세포#식습관#비만#가공식품#건강</li><li>막힌 혈관 뚫린다! 한의사 15kg 뺀 비트주스 다이어트 해독주스 레시피</li><li>“우리 집에는 절대 안 둔다”… 의사가 경고한 ‘암 위험 높이는 물건’</li><li>라인 만드는 의사 DR.권병소</li><li>치과의사 매직박</li></ul></div>
 
-<div class="card"><h2>⭐ 감지된 셀럽 (건강 앵글)</h2><span class="chip">여에스더<i>1</i></span> <span class="chip">김성은<i>1</i></span> <span class="chip">보아<i>1</i></span> <span class="chip">홍진경<i>1</i></span> <span class="chip">조혜련<i>1</i></span> <span class="chip">헬시타임<i>1</i></span> <span class="chip">이채연<i>1</i></span> <span class="chip">장윤정<i>1</i></span> <span class="chip">이혜정<i>1</i></span> <span class="chip">빅마마<i>1</i></span> <span class="chip">윤은혜<i>1</i></span> <span class="chip">박준면<i>1</i></span></div>
-
-<div class="card"><h2>💊 권위 공백</h2>
-<div class="gap">약사 <b>1건</b> vs 의사·명의 11건 → 약사 목소리가 비어있음 — 차별화 기회</div></div>
-
-<div class="card"><h2>📈 주제 추이 (최근 스캔)</h2><table class='trend'><thead><tr><th>주제</th><th>07-04</th></tr></thead><tbody><tr><th class='tname'>다이어트</th><td>7</td></tr><tr><th class='tname'>감량</th><td>5</td></tr><tr><th class='tname'>스트레칭</th><td>4</td></tr><tr><th class='tname'>식단</th><td>4</td></tr><tr><th class='tname'>피부</th><td>3</td></tr><tr><th class='tname'>위고비</th><td>3</td></tr><tr><th class='tname'>커피</th><td>2</td></tr><tr><th class='tname'>허벅지</th><td>2</td></tr><tr><th class='tname'>통증</th><td>2</td></tr><tr><th class='tname'>팔뚝살</th><td>2</td></tr><tr><th class='tname'>마운자로</th><td>2</td></tr><tr><th class='tname'>고관절</th><td>2</td></tr></tbody></table></div>
-
-<div class="card"><h2>📰 이번 피드 카드 (57)</h2>
-<ul class="cards"><li>자동저장 끄기 도움말</li>
-<li>여에스더가 자기 얼굴에 저지른 ‘이 행동’… “강박장애일 수도”</li>
-<li>아침 공복에 달걀, 빵 대신에 ‘이 음식’ 먹었더니…혈당, 체중에 변화가?</li>
-<li>평생 운동 하나만 해야 한다면? 전문가가 꼽은 ‘이 동작’</li>
-<li>“40대에도 슬림 탄탄 몸매” 김성은, 처음 도전한 ‘이 운동’ 효과는?</li>
-<li>&quot;믹스커피보다 나쁘다&quot; 식후에 먹으면 췌장 혹사하는 음식 5가지</li>
-<li>&quot;늙지 않으려면 냉장고부터 확인하세요&quot; 몸속 만성염증 키우는 의외의 음식 6가지</li>
-<li>스쿼트보다 재밌는 허벅지 운동 4가지</li>
-<li>만만하게 보다가 진땀 뺌 ㄷㄷ #체형교정 #스트레칭 #코어운동</li>
-<li>180cm·51kg 홍진경, 마른 이유 있었네…아침 식단 보니 “이게 다야?</li>
-<li>“휑 비었다”… 이지혜 겪었다는 탈모 원인, 뭐였을까?</li>
-<li>“‘이것’ 안 먹으니, 피부 훨씬 좋아져”… 관리의 신 조혜련, 무결점 피부로 거듭난 비결</li>
-<li>&quot;배달시켜 먹어요&quot; 복근 보유한 이채연, 다이어트 식단·몸매관리 비법 공개 [헬시타임]</li>
-<li>한국인 90%가 잘못 먹는 채소 TOP3</li>
-<li>팔을 뒤로 넘기면 독소 싹 빠집니다 #림프순환 #붓기관리 #어깨통증 #팔뚝살 #다이어트</li>
-<li>정신과의사 뇌부자들 4,825명의 구독자</li>
-<li>정신과의사 뇌부자들</li>
-<li>4,825명의 구독자</li>
-<li>심플약사 4,020명의 팔로워</li>
-<li>4,020명의 팔로워</li>
-<li>hotpapahomt 4,123명의 팔로워</li>
-<li>4,123명의 팔로워</li>
-<li>운동메이트 장쌤 5,734명의 팔로워</li>
-<li>운동메이트 장쌤</li>
-<li>5,734명의 팔로워</li>
-<li>&quot;매일 술 마셔도 48kg&quot;.. 운동 안 하는 장윤정이 먹는 식단은?</li>
-<li>&quot;손끝이 먼저 알려줍니다&quot; 고지혈증 조용히 쌓일 때 몸이 보내는 증상 4가지</li>
-<li>&quot;죽어가던 췌장도 다시 깨웁니다&quot; 당뇨가 무섭다면 챙겨야 할 음식 5가지</li>
-<li>마운자로 효과 1도 없는 사람들 특징 5가지</li>
-<li>“냉장고 넣었는데 벌써 물컹, 시큼한 냄새?”…여름철 빨리 상하는 식재료 5가지</li>
-<li>40대 50대 고관절 통증 완화 운동 스트레칭 (요가 나비 자세)</li>
-<li>배부르게 퍼먹어도 죄책감 없는? 빅마마 이혜정 22kg 감량한 &quot;두부계란볶음밥&quot; 레시피</li>
-<li>&quot;간헐적단식은 윤은혜처럼&quot; 일주일 -3kg 빠진다는 다이어트 10계명</li>
-<li>&quot;피가 끈적끈적하다고요?&quot; 꽉 막힌 혈관 뚫어주는 고지혈증 좋은 음식 4가지</li>
-<li>콜레스테롤 높을 때 금물! 전문가들이 말리는 음식 4가지</li>
-<li>정신과 의사들이 말하는 ‘정서적으로 건강한 아이들’ 특징 10</li>
-<li>고관절 뻣뻣하다면? 유연성 높이는 스트레칭 운동 종류</li>
-<li>&#x27;신장이 몸에 보내는&#x27; 신호 신장안좋으면 나타나는 증상 4가지</li>
-<li>박준면 10kg 감량 비결, 돈 안 드는 &quot;이 습관&quot; 하나였다고?</li>
-<li>이 증상 있다면 당장 병원 가세요! 대장암 초기증상 5가지</li>
-<li>위고비 마운자로 후기 3개월 만에 17kg 감량한 실제 경험</li>
-<li>고혈압낮추는방법 7가지, 혈압정상수치 유지법</li>
-<li>46세 김나영이 돈 안 아깝다 추천한, 피부과 리프팅 레이저</li>
-<li>진짜 48세 맞아? 엄지원 완벽한 라인 비결! 다이어트 양배추 요리</li>
-<li>피부 탄력 떨어진“16kg 감량 후 44kg” 한혜연, 다이어트 후 턱선 고민까지</li>
-<li>임산부 배나오는 시기 임신 주수별 배크기 한눈에 보기</li>
-<li>허벅지 안쪽 내전근 스트레칭이 필수인 이유와 방법BEST 3</li>
-<li>&quot;한가인도 피해 갈 수 없었다&quot;.. 나이 들수록 신경 쓰이는 &#x27;팔뚝살&#x27; 삭제 운동 2가지</li>
-<li>칼로리 25kcal? 메가커피 의외의 다이어트 메뉴</li>
-<li>원장님도 포기 못하는 평생 관리 TOP 3</li>
-<li>라인 만드는 의사 DR.권병소</li>
-<li>“10kg 감량한 안은진, 식단 공개” 다이어트 비결은 ‘이 루틴?’</li>
-<li>조현아 &quot;살 너무 확 빠져 결국 중단&quot;…위고비 후기 직접 밝혔다</li>
-<li>간기능 수치 ALT 높으면 낮추는 방법 확인해야</li>
-<li>&quot;먹을 때마다 뇌가 늙어간다?&quot; 치매 위험 높이는 뜻밖의 음식 TOP 5</li>
-<li>요즘 난리난 천연 위고비 레시피 직접 먹어보니 역대급 포만감</li>
-<li>‘살아있는 전설’ 또 해냈다…‘페이커’ MSI 사상 첫 100승, T1은 3-0 완승 [SS포커스]</li></ul></div>
+<details class="blk"><summary>📊 상세 분석 (훅 패턴 · 셀럽 · 주제 추이) 펼치기</summary>
+<div class="card" style="margin-top:12px"><h2>🪝 훅 패턴 분포</h2><div class="row"><span class="lbl">숫자 리스트</span><span class="bar"><span class="fill" style="width:100%;background:var(--c2)"></span></span><span class="num">14</span></div>
+<div class="row"><span class="lbl">질문·미완성</span><span class="bar"><span class="fill" style="width:79%;background:var(--c2)"></span></span><span class="num">11</span></div>
+<div class="row"><span class="lbl">권위</span><span class="bar"><span class="fill" style="width:57%;background:var(--c2)"></span></span><span class="num">8</span></div>
+<div class="row"><span class="lbl">손실회피·공포</span><span class="bar"><span class="fill" style="width:43%;background:var(--c2)"></span></span><span class="num">6</span></div>
+<div class="row"><span class="lbl">즉효·시간</span><span class="bar"><span class="fill" style="width:36%;background:var(--c2)"></span></span><span class="num">5</span></div>
+<div class="row"><span class="lbl">뒤집기</span><span class="bar"><span class="fill" style="width:21%;background:var(--c2)"></span></span><span class="num">3</span></div>
+<div class="row"><span class="lbl">금기·처방</span><span class="bar"><span class="fill" style="width:7%;background:var(--c2)"></span></span><span class="num">1</span></div></div>
+<div class="card"><h2>⭐ 감지된 셀럽</h2><span class="chip">워킹맘<i>1</i></span> <span class="chip">박경림<i>1</i></span> <span class="chip">헬시타임<i>1</i></span> <span class="chip">이채연<i>1</i></span> <span class="chip">뉴욕<i>1</i></span> <span class="chip">이영애<i>1</i></span> <span class="chip">짜파게티<i>1</i></span> <span class="chip">김민<i>1</i></span></div>
+<div class="card"><h2>📈 주제 추이 (최근 스캔)</h2><table class='trend'><thead><tr><th>주제</th><th>07-04</th></tr></thead><tbody><tr><th class='tname'>운동·통증·스트레칭</th><td>10</td></tr><tr><th class='tname'>셀럽 감량·식단</th><td>4</td></tr><tr><th class='tname'>콜레스테롤·혈압·혈관</th><td>4</td></tr><tr><th class='tname'>혈당·당뇨</th><td>3</td></tr><tr><th class='tname'>뒤집기 음식·식습관</th><td>2</td></tr><tr><th class='tname'>피부·노화</th><td>2</td></tr><tr><th class='tname'>면역·피로</th><td>2</td></tr><tr><th class='tname'>영양제·성분</th><td>1</td></tr><tr><th class='tname'>비만약(위고비·마운자로)</th><td>1</td></tr></tbody></table></div>
+</details>
 
 <div class="card"><h2>🗂 지난 스캔</h2>
-<details><summary>기록 1회 펼치기</summary><ul><li><b>2026-07-04 12:45</b> · 건강카드 57 · 주제 다이어트, 감량, 스트레칭, 식단, 피부</li></ul></details></div>
+<details class="blk"><summary>기록 1회 펼치기</summary><ul><li><b>2026-07-04 15:34</b> · 건강 45 · 운동·통증·스트레칭, 셀럽 감량·식단, 콜레스테롤·혈압·혈관, 혈당·당뇨</li></ul></details></div>
 
-<div class="foot">자동 생성 · homefeed-topics · 데이터 출처: 네이버 모바일 홈피드(로컬 스캔)</div>
+<div class="foot">자동 생성 · homefeed-topics · 데이터: 네이버 모바일 홈피드(로컬 스캔)</div>
 </div></body></html>

@@ -2,8 +2,12 @@
 """
 data/history.json → docs/index.html (GitHub Pages 누적 대시보드).
 
-스캔이 쌓일수록 '홈피드 건강판에 뜨는 주제/훅/셀럽'의 흐름이 보인다.
-외부 라이브러리 없이 self-contained (GitHub Pages 정적 서빙), 라이트/다크 대응.
+구성(위→아래):
+  1) 지금 뜨는 '구체' 주제 — 카드를 세부 클러스터로 묶어 정리 (광범위한 '다이어트' X)
+  2) 약사 공백 — 의사·전문가가 다루는 실제 카드 + 약사 각도가 비어있는 지점 설명
+  3) 분석(훅 분포·셀럽·주제 추이) — 아래로
+  4) 지난 스캔
+외부 라이브러리 없이 self-contained, 라이트/다크 대응.
 """
 import sys
 try:
@@ -36,21 +40,49 @@ def bar_rows(items, maxv, color):
     return "\n".join(out)
 
 
+HOOK_SHORT = {"질문·미완성(?·이유·비결)": "질문·미완성", "숫자리스트(TOP·N가지)": "숫자 리스트",
+              "권위(약사·의사·전문가)": "권위", "손실회피·공포(피해야·독·위험)": "손실회피·공포",
+              "즉효·시간(하루·N분·싹·쫙)": "즉효·시간", "뒤집기(90%·잘못·사실은)": "뒤집기",
+              "금기·처방(절대·이렇게 드세요)": "금기·처방"}
+
+
+def category_blocks(categories):
+    """구체 주제 클러스터 — 각 카테고리 헤더 + 카드 묶음."""
+    if not categories:
+        return "<p class='muted'>데이터 없음</p>"
+    out = []
+    for cat in categories:
+        name, cnt, cards = cat["name"], cat["count"], cat["cards"]
+        if name == "기타":
+            continue
+        head = (f'<div class="cathead"><span class="catname">{esc(name)}</span>'
+                f'<span class="catcnt">{cnt}</span></div>')
+        shown = cards[:6]
+        lis = "".join(f"<li>{esc(c)}</li>" for c in shown)
+        more = ""
+        if len(cards) > 6:
+            rest = "".join(f"<li>{esc(c)}</li>" for c in cards[6:])
+            more = f"<details><summary>+{len(cards)-6}개 더</summary><ul>{rest}</ul></details>"
+        out.append(f'<div class="cat">{head}<ul>{lis}</ul>{more}</div>')
+    return "\n".join(out)
+
+
 def topic_trend_table(scans):
-    """주제별 스캔 간 추이 (최근 8회)."""
     recent = scans[-8:]
-    all_topics = Counter()
+    tot = Counter()
     for s in recent:
-        for t, c in s.get("topic_counts", {}).items():
-            all_topics[t] += c
-    top = [t for t, _ in all_topics.most_common(12)]
+        for c in s.get("categories", []):
+            tot[c["name"]] += c["count"]
+    top = [t for t, _ in tot.most_common(10) if t != "기타"]
     if not top:
-        return "<p class='muted'>아직 데이터가 부족합니다.</p>"
+        return "<p class='muted'>아직 추이 데이터가 부족합니다(스캔 누적 시 채워집니다).</p>"
     head = "".join(f"<th>{esc(s['date'][5:])}</th>" for s in recent)
     rows = []
     for t in top:
-        cells = "".join(
-            f"<td>{s.get('topic_counts', {}).get(t, 0) or ''}</td>" for s in recent)
+        cells = ""
+        for s in recent:
+            v = next((c["count"] for c in s.get("categories", []) if c["name"] == t), 0)
+            cells += f"<td>{v or ''}</td>"
         rows.append(f"<tr><th class='tname'>{esc(t)}</th>{cells}</tr>")
     return (f"<table class='trend'><thead><tr><th>주제</th>{head}</tr></thead>"
             f"<tbody>{''.join(rows)}</tbody></table>")
@@ -63,96 +95,110 @@ def build():
         print("스캔 기록 없음"); return
     latest = scans[-1]
 
-    topics = sorted(latest.get("topic_counts", {}).items(), key=lambda x: -x[1])[:12]
+    categories = latest.get("categories", [])
     hooks = sorted(latest.get("hook_counts", {}).items(), key=lambda x: -x[1])
     celebs = latest.get("celebs", [])[:12]
     gap = latest.get("authority_gap", {})
     n_ph = gap.get("약사", 0); n_dr = gap.get("의사·명의", 0)
-    cards = latest.get("health_cards", [])
+    doctor_cards = latest.get("doctor_cards", [])
 
-    tmax = max((v for _, v in topics), default=1)
     hmax = max((v for _, v in hooks), default=1)
-
-    topic_html = bar_rows(topics, tmax, "var(--c1)")
-    hook_html = bar_rows(hooks, hmax, "var(--c2)")
+    cat_html = category_blocks(categories)
+    hook_html = bar_rows([(HOOK_SHORT.get(k, k), v) for k, v in hooks], hmax, "var(--c2)")
     celeb_html = " ".join(
-        f'<span class="chip">{esc(n)}<i>{c}</i></span>' for n, c in celebs) or "<span class='muted'>감지된 셀럽 없음</span>"
-    cards_html = "\n".join(f"<li>{esc(c)}</li>" for c in cards)
+        f'<span class="chip">{esc(n)}<i>{c}</i></span>' for n, c in celebs) or "<span class='muted'>없음</span>"
     trend_html = topic_trend_table(scans)
+    doc_html = ("".join(f"<li>{esc(c)}</li>" for c in doctor_cards)
+                or "<li class='muted'>이번 스캔엔 의사·전문가 카드가 적었습니다.</li>")
 
     past = "".join(
-        f"<li><b>{esc(s['scanned_at'])}</b> · 건강카드 {s['health_card_count']} · "
-        f"주제 {', '.join(list(s.get('topic_counts', {}).keys())[:5])}</li>"
+        f"<li><b>{esc(s['scanned_at'])}</b> · 건강 {s['health_card_count']} · "
+        f"{', '.join(c['name'] for c in s.get('categories', [])[:4])}</li>"
         for s in reversed(scans[-15:]))
-
-    gap_msg = ("약사 목소리가 비어있음 — 차별화 기회" if n_ph <= n_dr
-               else "약사 콘텐츠 이미 존재")
 
     doc = f"""<!doctype html><html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>홈피드 건강판 트렌드</title>
 <style>
 :root{{--bg:#fafafa;--card:#fff;--tx:#1a1a1a;--mut:#777;--line:#eaeaea;
- --c1:#3b82f6;--c2:#8b5cf6;--c3:#f59e0b;--accent:#ef4444;}}
+ --c1:#3b82f6;--c2:#8b5cf6;--c3:#f59e0b;--accent:#ef4444;--chip:#f1f3f6;}}
 @media(prefers-color-scheme:dark){{:root{{--bg:#0f1115;--card:#181b21;--tx:#e8e8e8;
- --mut:#8b93a1;--line:#262b34;}}}}
+ --mut:#8b93a1;--line:#262b34;--chip:#242a33;}}}}
 *{{box-sizing:border-box}}
 body{{margin:0;background:var(--bg);color:var(--tx);
  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;
  line-height:1.5;padding:16px}}
-.wrap{{max-width:860px;margin:0 auto}}
+.wrap{{max-width:880px;margin:0 auto}}
 h1{{font-size:20px;margin:8px 0 2px}}
 .sub{{color:var(--mut);font-size:13px;margin-bottom:18px}}
 .card{{background:var(--card);border:1px solid var(--line);border-radius:14px;
  padding:16px 18px;margin-bottom:14px}}
-.card h2{{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:6px}}
+.card>h2{{font-size:15px;margin:0 0 4px}}
+.card .hint{{color:var(--mut);font-size:12px;margin:0 0 12px}}
+.catgrid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}}
+.cat{{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--bg)}}
+.cathead{{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}}
+.catname{{font-weight:700;font-size:13.5px}}
+.catcnt{{background:var(--c1);color:#fff;border-radius:20px;font-size:11px;
+ padding:1px 9px;font-weight:700}}
+.cat ul{{margin:0;padding-left:16px;font-size:12.5px}}
+.cat li{{margin:3px 0}}
+.cat details{{margin-top:5px}} .cat summary{{cursor:pointer;color:var(--mut);font-size:12px}}
 .row{{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}}
-.lbl{{width:150px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.lbl{{width:110px;flex:none;white-space:nowrap}}
 .bar{{flex:1;background:var(--line);border-radius:6px;height:12px;overflow:hidden}}
 .fill{{display:block;height:100%;border-radius:6px}}
 .num{{width:26px;text-align:right;color:var(--mut);flex:none}}
-.chip{{display:inline-block;background:var(--line);border-radius:20px;
+.chip{{display:inline-block;background:var(--chip);border-radius:20px;
  padding:4px 11px;margin:3px;font-size:13px}}
 .chip i{{color:var(--mut);font-style:normal;margin-left:5px;font-size:11px}}
-.gap{{font-size:14px}}
-.gap b{{color:var(--accent)}}
-ul.cards{{margin:0;padding-left:18px;font-size:13px;columns:1}}
-ul.cards li{{margin:3px 0}}
+.gapbox{{background:var(--bg);border:1px dashed var(--accent);border-radius:11px;
+ padding:11px 13px;margin:10px 0;font-size:13px}}
+.gapbox b{{color:var(--accent)}}
+.angle{{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}}
+.angle span{{background:var(--chip);border-radius:6px;padding:3px 9px;font-size:12px}}
+ul.docs{{margin:8px 0 0;padding-left:18px;font-size:12.5px}}
+ul.docs li{{margin:3px 0}}
 table.trend{{width:100%;border-collapse:collapse;font-size:12px}}
 table.trend th,table.trend td{{border:1px solid var(--line);padding:4px 6px;text-align:center}}
 table.trend th.tname{{text-align:left;white-space:nowrap}}
-.muted{{color:var(--mut);font-size:13px}}
-details{{font-size:13px}} summary{{cursor:pointer;color:var(--mut)}}
+.muted{{color:var(--mut);font-size:12.5px}}
+details.blk summary{{cursor:pointer;color:var(--mut);font-size:13px}}
 .foot{{color:var(--mut);font-size:11px;text-align:center;margin:18px 0}}
 </style></head><body><div class="wrap">
 <h1>🩺 홈피드 건강판 트렌드</h1>
-<div class="sub">네이버 모바일 홈피드 '건강판'을 3일마다 스캔 · 최근 스캔 <b>{esc(latest['scanned_at'])}</b>
- · 카드 {latest['card_count']}개(건강 {latest['health_card_count']})</div>
+<div class="sub">네이버 모바일 홈피드 '건강판' 3일마다 스캔 · 최근 <b>{esc(latest['scanned_at'])}</b>
+ · 카드 {latest['card_count']}(건강 {latest['health_card_count']})</div>
 
-<div class="card"><h2>🔥 지금 뜨는 주제</h2>{topic_html}</div>
+<div class="card"><h2>🔥 지금 뜨는 주제</h2>
+<p class="hint">피드 카드를 세부 주제로 묶어 정리 · 숫자는 카드 수</p>
+<div class="catgrid">{cat_html}</div></div>
 
-<div class="card"><h2>🪝 훅 패턴 분포</h2>{hook_html}</div>
+<div class="card"><h2>💊 약사가 파고들 빈자리</h2>
+<p class="hint">아래 주제들은 지금 <b>의사·전문가 목소리</b>로 설명되는 중 —
+ 약사 관점은 비어 있어요(이번 스캔: 약사 {n_ph} vs 의사·전문가 {n_dr}).</p>
+<div class="gapbox">같은 주제라도 <b>약사가 잡으면 차별화</b>되는 각도:
+<div class="angle"><span>복용 타이밍·순서</span><span>약물 상호작용</span>
+<span>영양제↔처방약 병용</span><span>성분 실효성·용량</span><span>부작용 대처</span></div></div>
+<p class="hint" style="margin-top:10px">지금 의사·전문가가 다루고 있는 실제 카드:</p>
+<ul class="docs">{doc_html}</ul></div>
 
-<div class="card"><h2>⭐ 감지된 셀럽 (건강 앵글)</h2>{celeb_html}</div>
-
-<div class="card"><h2>💊 권위 공백</h2>
-<div class="gap">약사 <b>{n_ph}건</b> vs 의사·명의 {n_dr}건 → {esc(gap_msg)}</div></div>
-
+<details class="blk"><summary>📊 상세 분석 (훅 패턴 · 셀럽 · 주제 추이) 펼치기</summary>
+<div class="card" style="margin-top:12px"><h2>🪝 훅 패턴 분포</h2>{hook_html}</div>
+<div class="card"><h2>⭐ 감지된 셀럽</h2>{celeb_html}</div>
 <div class="card"><h2>📈 주제 추이 (최근 스캔)</h2>{trend_html}</div>
-
-<div class="card"><h2>📰 이번 피드 카드 ({len(cards)})</h2>
-<ul class="cards">{cards_html}</ul></div>
+</details>
 
 <div class="card"><h2>🗂 지난 스캔</h2>
-<details><summary>기록 {len(scans)}회 펼치기</summary><ul>{past}</ul></details></div>
+<details class="blk"><summary>기록 {len(scans)}회 펼치기</summary><ul>{past}</ul></details></div>
 
-<div class="foot">자동 생성 · homefeed-topics · 데이터 출처: 네이버 모바일 홈피드(로컬 스캔)</div>
+<div class="foot">자동 생성 · homefeed-topics · 데이터: 네이버 모바일 홈피드(로컬 스캔)</div>
 </div></body></html>"""
 
     os.makedirs(DOCS, exist_ok=True)
     with open(os.path.join(DOCS, "index.html"), "w", encoding="utf-8") as f:
         f.write(doc)
-    print(f"대시보드 생성 → docs/index.html ({len(scans)}회 스캔 반영)")
+    print(f"대시보드 생성 → docs/index.html ({len(scans)}회 스캔, 카테고리 {len(categories)}개)")
 
 
 if __name__ == "__main__":

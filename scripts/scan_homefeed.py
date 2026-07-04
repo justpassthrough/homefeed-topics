@@ -78,6 +78,53 @@ TOPIC_MERGE = {"간질환": "간건강", "간기능": "간건강", "간 건강":
 CELEB_ANGLE = re.compile(r"(감량|다이어트|식단|마른|살 뺀|비결|근황|얼굴|몸매|건강)")
 NAME_RE = re.compile(r"([가-힣]{2,4})(?:씨|님)?\s*(?:의|,|은|는|이|가)?\s")
 
+# ── 구체 주제 분류 (광범위한 '다이어트' 대신 세부 클러스터) ──────────
+# 위에서부터 먼저 매칭. 셀럽 감량은 별도 처리(이름+앵글 필요).
+CATEGORY_RULES = [
+    ("비만약(위고비·마운자로)", re.compile(r"위고비|마운자로|삭센다|비만약|GLP|먹는 살|천연 위고비|일라이릴리")),
+    ("혈당·당뇨", re.compile(r"혈당|당뇨|공복|인슐린|췌장|혈당스파이크")),
+    ("간 건강", re.compile(r"간질환|간기능|간건강|간 건강|간에|ALT|지방간|간이|쿠퍼스")),
+    ("콜레스테롤·혈압·혈관", re.compile(r"콜레스테롤|고지혈|고혈압|혈압|혈관|중성지방")),
+    ("뒤집기 음식·식습관", re.compile(r"90%|잘못 먹|이렇게 (드|먹)|먹는 시간|폭식|공복에|아침 (공복|에)|먹었더니|채소|당 떨어|먹지 ?마")),
+    ("운동·통증·스트레칭", re.compile(r"운동|스트레칭|통증|허리|고관절|관절|허벅지|팔뚝|뱃살|복근|코어|데드리프트|자세|체형|하체|근력")),
+    ("탈모·모발", re.compile(r"탈모|모발|샴푸|머리숱|휑|정수리")),
+    ("피부·노화", re.compile(r"피부|주름|탄력|리프팅|턱선|미백|기미|잡티")),
+    ("갱년기·폐경·호르몬", re.compile(r"갱년기|폐경|호르몬|여성 건강")),
+    ("면역·피로", re.compile(r"면역|피로|기력|영양 부족")),
+    ("치매·뇌 건강", re.compile(r"치매|뇌|기억력|인지|정서")),
+    ("영양제·성분", re.compile(r"영양제|비타민|유산균|프로바이오틱스|콜라겐|마그네슘|오메가|밀크씨슬|루테인|아연|셀레늄")),
+]
+AUTHORITY_RE = re.compile(r"약사|의사|명의|전문가|박사|교수|한의사|영양사")
+DOCTOR_RE = re.compile(r"의사|명의|전문가|박사|교수|한의사")
+# 크리에이터 프로필·UI 노이즈 (카드가 아님)
+NOISE_RE = re.compile(r"구독자|팔로워|이웃|재생시간|입력 내용|도움말|바로가기|자동완성|"
+                      r"검색 이력|설정|더 알아보기|지금 신청|앱 사용|판 관리")
+# 건강 카드 판별용 키워드
+HEALTH_KW = TOPIC_WORDS + ["약사", "의사", "명의", "운동", "몸매", "혈", "다이어트",
+                           "감량", "면역", "당뇨", "암", "폐경", "살 빼", "살뺀", "식단",
+                           "스트레칭", "통증", "붓기", "독소", "근육", "호르몬", "숙면"]
+
+def is_health_card(c):
+    return any(k in c for k in HEALTH_KW) and not NOISE_RE.search(c)
+
+
+def categorize(cards, celeb_names):
+    """각 카드를 구체 주제 클러스터에 배정. 셀럽 감량은 최우선."""
+    buckets = {}
+    def put(cat, card):
+        buckets.setdefault(cat, []).append(card)
+    for c in cards:
+        # 셀럽 감량·식단: 감지된 셀럽 이름 + 감량/식단 앵글
+        if any(n in c for n in celeb_names) and re.search(r"감량|식단|kg|마른|살 뺀|살 뺐|비결|몸매|다이어트", c):
+            put("셀럽 감량·식단", c); continue
+        matched = False
+        for cat, rx in CATEGORY_RULES:
+            if rx.search(c):
+                put(cat, c); matched = True; break
+        if not matched:
+            put("기타", c)
+    return buckets
+
 
 def extract_celebs(titles):
     """제목에서 '유명인 + 건강앵글' 조합 추출. 오탐 억제 위해 앵글어 동반 필수."""
@@ -149,6 +196,7 @@ def scrape_health_panel(max_scroll=8):
 
 
 def analyze(cards):
+    """cards = 건강 카드 서브셋(노이즈 제거됨)에 대한 분석."""
     # 훅 분류
     hook_hits = {name: [] for name, _ in HOOK_RULES}
     for t in cards:
@@ -167,15 +215,29 @@ def analyze(cards):
             topic_counts[w] += 1
     # 셀럽
     celebs = extract_celebs(cards)
-    # 약사 vs 의사 공백
+    celeb_names = [n for n, _ in celebs]
+    # 구체 주제 클러스터
+    buckets = categorize(cards, celeb_names)
+    # 카테고리 정렬(카드 많은 순), 각 대표 카드 3개
+    categories = []
+    for cat, cs in sorted(buckets.items(), key=lambda x: -len(x[1])):
+        if cat == "기타":
+            continue
+        categories.append({"name": cat, "count": len(cs), "cards": cs})
+    if "기타" in buckets:
+        categories.append({"name": "기타", "count": len(buckets["기타"]), "cards": buckets["기타"]})
+    # 약사 vs 의사 공백 + 의사류가 다룬 실제 카드(공백 설명용)
     n_pharm = sum(1 for t in cards if "약사" in t)
-    n_doc = sum(1 for t in cards if "의사" in t or "명의" in t)
+    doctor_cards = [t for t in cards if DOCTOR_RE.search(t) and "약사" not in t]
+    n_doc = len(doctor_cards)
     return {
         "hook_counts": dict(sorted(hook_counts.items(), key=lambda x: -x[1])),
         "hook_examples": {k: v[:4] for k, v in hook_hits.items()},
         "topic_counts": dict(topic_counts.most_common(20)),
+        "categories": categories,
         "celebs": celebs,
         "authority_gap": {"약사": n_pharm, "의사·명의": n_doc},
+        "doctor_cards": doctor_cards[:12],
     }
 
 
@@ -186,12 +248,10 @@ def main():
     print(f"  건강 탭 클릭={clicked} · 수집 카드 {len(cards)}개")
     if len(cards) < 15:
         print("  ⚠️ 카드가 너무 적음 — 네이버 구조 변경 or 로딩 실패 가능")
-    a = analyze(cards)
-
-    # 건강 관련 카드만 추림 (레시피/게임/일반 제외한 '건강판다운' 카드)
-    HK = TOPIC_WORDS + ["약사", "의사", "명의", "운동", "살", "몸매", "혈", "장", "눈",
-                        "다이", "감량", "면역", "당뇨", "암", "폐경"]
-    health_cards = [c for c in cards if any(k in c for k in HK)]
+    # 건강 카드만 추림(노이즈·크리에이터 프로필 제거) → 이 서브셋으로 분석
+    health_cards = [c for c in cards if is_health_card(c)]
+    print(f"  건강 카드 {len(health_cards)}개 (전체 {len(cards)})")
+    a = analyze(health_cards)
 
     os.makedirs(DATA, exist_ok=True)
     stamp = now.strftime("%Y-%m-%d %H:%M")
@@ -214,7 +274,8 @@ def main():
     rec = {"scanned_at": stamp, "date": now.strftime("%Y-%m-%d"),
            "card_count": len(cards), "health_card_count": len(health_cards),
            "hook_counts": a["hook_counts"], "topic_counts": a["topic_counts"],
-           "celebs": a["celebs"], "authority_gap": a["authority_gap"],
+           "categories": a["categories"], "celebs": a["celebs"],
+           "authority_gap": a["authority_gap"], "doctor_cards": a["doctor_cards"],
            "health_cards": health_cards}
     hist["scans"] = [s for s in hist.get("scans", []) if s.get("date") != rec["date"]]
     hist["scans"].append(rec)
