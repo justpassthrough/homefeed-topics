@@ -55,15 +55,24 @@ def category_blocks(categories):
         name, cnt, cards = cat["name"], cat["count"], cat["cards"]
         if name == "기타":
             continue
+        verdict = cat.get("verdict", "")
+        reason = cat.get("reason", "")
+        angle = cat.get("angle", "")
+        vclass = ("v-yes" if verdict.startswith("✅") else
+                  "v-cond" if verdict.startswith("⚠️") else "v-no")
         head = (f'<div class="cathead"><span class="catname">{esc(name)}</span>'
-                f'<span class="catcnt">{cnt}</span></div>')
-        shown = cards[:6]
+                f'<span class="catcnt">{cnt}</span></div>'
+                f'<div class="verdict {vclass}">{esc(verdict)}</div>'
+                f'<div class="why">{esc(reason)}</div>')
+        angle_html = (f'<div class="anglehint"><b>약사 각도:</b> {esc(angle)}</div>'
+                      if angle and angle != "-" else "")
+        shown = cards[:5]
         lis = "".join(f"<li>{esc(c)}</li>" for c in shown)
         more = ""
-        if len(cards) > 6:
-            rest = "".join(f"<li>{esc(c)}</li>" for c in cards[6:])
-            more = f"<details><summary>+{len(cards)-6}개 더</summary><ul>{rest}</ul></details>"
-        out.append(f'<div class="cat">{head}<ul>{lis}</ul>{more}</div>')
+        if len(cards) > 5:
+            rest = "".join(f"<li>{esc(c)}</li>" for c in cards[5:])
+            more = f"<details><summary>+{len(cards)-5}개 더</summary><ul>{rest}</ul></details>"
+        out.append(f'<div class="cat {vclass}b">{head}{angle_html}<ul>{lis}</ul>{more}</div>')
     return "\n".join(out)
 
 
@@ -141,6 +150,13 @@ h1{{font-size:20px;margin:8px 0 2px}}
 .catname{{font-weight:700;font-size:13.5px}}
 .catcnt{{background:var(--c1);color:#fff;border-radius:20px;font-size:11px;
  padding:1px 9px;font-weight:700}}
+.verdict{{font-size:12px;font-weight:700;margin-bottom:2px}}
+.v-yes{{color:#16a34a}} .v-cond{{color:#d97706}} .v-no{{color:var(--mut)}}
+.cat.v-yesb{{border-color:#16a34a55}} .cat.v-condb{{border-color:#d9770655}}
+.why{{font-size:11.5px;color:var(--mut);margin-bottom:7px;line-height:1.4}}
+.anglehint{{font-size:11.5px;background:var(--chip);border-radius:7px;
+ padding:5px 8px;margin-bottom:7px}}
+.anglehint b{{color:var(--c2)}}
 .cat ul{{margin:0;padding-left:16px;font-size:12.5px}}
 .cat li{{margin:3px 0}}
 .cat details{{margin-top:5px}} .cat summary{{cursor:pointer;color:var(--mut);font-size:12px}}
@@ -170,8 +186,9 @@ details.blk summary{{cursor:pointer;color:var(--mut);font-size:13px}}
 <div class="sub">네이버 모바일 홈피드 '건강판' 3일마다 스캔 · 최근 <b>{esc(latest['scanned_at'])}</b>
  · 카드 {latest['card_count']}(건강 {latest['health_card_count']})</div>
 
-<div class="card"><h2>🔥 지금 뜨는 주제</h2>
-<p class="hint">피드 카드를 세부 주제로 묶어 정리 · 숫자는 카드 수</p>
+<div class="card"><h2>🔥 지금 뜨는 주제 (약사+DDS 적합도순)</h2>
+<p class="hint">피드 카드를 세부 주제로 묶고, <b>내 블로그에 먹히는지 자동 판정</b>(✅추천/⚠️조건부/❌패스).
+ 크기가 아니라 '약사·DDS가 차별화되는가'로 정렬 · 숫자는 카드 수</p>
 <div class="catgrid">{cat_html}</div></div>
 
 <div class="card"><h2>💊 약사가 파고들 빈자리</h2>

@@ -108,6 +108,30 @@ def is_health_card(c):
     return any(k in c for k in HEALTH_KW) and not NOISE_RE.search(c)
 
 
+# ── lane 판정 (블로그 약사+DDS 적합도) ── 크기가 아니라 '내 무기가 먹히는가'로 고름
+# (weight, 판정, 왜, 약사/DDS 각도 힌트=실제팩트 씨앗)
+LANE = {
+    "비만약(위고비·마운자로)": (3, "✅ 추천", "주력 주제 · 부작용·복약·상호작용 각도가 강함", "부작용 대처 / 병용 금기 / 주사 vs 경구 원리"),
+    "영양제·성분": (3, "✅ 추천", "주력 주제 · 성분 실효성·흡수형태로 약사 차별화", "성분 실효성·용량 / 흡수형태(제형) / 복용 타이밍"),
+    "혈당·당뇨": (3, "✅ 추천", "보편 관심 · '흡수 속도(DDS)' 각도로 뒤집기 좋음", "정제탄수 흡수속도 / 혈당 스파이크 원리"),
+    "간 건강": (3, "✅ 추천", "주력(밀크씨슬 등) · 약물 간대사 각도", "약물 간대사 / 밀크씨슬 실효성·복용시간"),
+    "콜레스테롤·혈압·혈관": (2, "⚠️ 조건부", "스타틴 복용자 주의·오메가3 병용 각도 있음", "스타틴 병용 주의 / 오메가3 형태·용량"),
+    "치매·뇌 건강": (2, "⚠️ 조건부", "영양제 연결 시 추천 · 명의 카드 반박 가능", "치매 영양제 성분 실효성 / 오메가3와 뇌"),
+    "면역·피로": (2, "⚠️ 조건부", "영양제(비타민·아연) 각도로 연결 가능", "면역 영양제 실효성 / 과용 주의"),
+    "갱년기·폐경·호르몬": (2, "⚠️ 조건부", "여성 영양제·호르몬 각도", "갱년기 영양제 실효성 / 약 병용"),
+    "탈모·모발": (2, "⚠️ 조건부", "탈모약·비오틴 각도로 연결 가능", "탈모약 복용 주의 / 비오틴 실효성"),
+    "셀럽 감량·식단": (2, "⚠️ 조건부", "시의성 훅 · 주력(비만약/영양제)과 엮으면 추천", "그 감량법의 원리 / 위고비·약 연관"),
+    "뒤집기 음식·식습관": (2, "⚠️ 조건부", "블로그 뒤집기 공식엔 맞음 · 약사 각도는 약할 수 있음", "흡수·성분 각도로 좁히면 OK"),
+    "피부·노화": (1, "❌ 대체로 패스", "콜라겐 등 성분과 안 엮이면 약사 차별화 약함", "먹는 vs 바르는 콜라겐 실효성(엮을 때만)"),
+    "운동·통증·스트레칭": (0, "❌ 패스", "영상 크리에이터 판 · 약사·DDS 차별화 약함", "-"),
+}
+DEFAULT_LANE = (1, "❌ 대체로 패스", "주력 주제·약사 각도와 거리가 있음", "-")
+
+
+def lane_of(name):
+    return LANE.get(name, DEFAULT_LANE)
+
+
 def categorize(cards, celeb_names):
     """각 카드를 구체 주제 클러스터에 배정. 셀럽 감량은 최우선."""
     buckets = {}
@@ -156,7 +180,8 @@ def extract_celebs(titles):
             # 장소·역할·태그 오탐
             "워킹맘", "헬시타임", "뉴욕", "서울", "강남", "미국", "일본", "한국인", "직장인",
             "주부", "엄마", "아빠", "남편", "아내", "아들", "언니", "그녀", "남자", "여자",
-            "당뇨", "혈당", "면역", "폐경", "갱년기", "복부", "뱃살", "허벅지", "관절"}
+            "당뇨", "혈당", "면역", "폐경", "갱년기", "복부", "뱃살", "허벅지", "관절",
+            "저탄고지", "고지", "뜻과", "김민", "간헐적", "클렌즈", "덮밥", "포케", "양배추"}
     # 장소/역할 접미사로 끝나면 인명 아님 (…맘/…타임/…맨/…족/…러/…님)
     def bad(n):
         return n in STOP or n[-1] in {"맘", "맨", "족", "님"} or n.endswith("타임")
@@ -223,16 +248,22 @@ def analyze(cards):
     # 셀럽
     celebs = extract_celebs(cards)
     celeb_names = [n for n, _ in celebs]
-    # 구체 주제 클러스터
+    # 구체 주제 클러스터 + lane 판정
     buckets = categorize(cards, celeb_names)
-    # 카테고리 정렬(카드 많은 순), 각 대표 카드 3개
     categories = []
-    for cat, cs in sorted(buckets.items(), key=lambda x: -len(x[1])):
+    for cat, cs in buckets.items():
         if cat == "기타":
             continue
-        categories.append({"name": cat, "count": len(cs), "cards": cs})
+        w, verdict, reason, angle = lane_of(cat)
+        categories.append({"name": cat, "count": len(cs), "cards": cs,
+                           "lane_weight": w, "verdict": verdict,
+                           "reason": reason, "angle": angle})
+    # 크기가 아니라 lane 적합도 우선(같으면 카드 수) — 내가 고르던 기준을 그대로
+    categories.sort(key=lambda c: (c["lane_weight"], c["count"]), reverse=True)
     if "기타" in buckets:
-        categories.append({"name": "기타", "count": len(buckets["기타"]), "cards": buckets["기타"]})
+        categories.append({"name": "기타", "count": len(buckets["기타"]),
+                           "cards": buckets["기타"], "lane_weight": -1,
+                           "verdict": "", "reason": "", "angle": ""})
     # 약사 vs 의사 공백 + 의사류가 다룬 실제 카드(공백 설명용)
     n_pharm = sum(1 for t in cards if "약사" in t)
     doctor_cards = [t for t in cards if DOCTOR_RE.search(t) and "약사" not in t]
